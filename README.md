@@ -152,3 +152,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [Coqui TTS](https://github.com/coqui-ai/TTS): The text-to-speech library used in this project.
 - [PyTorch](https://pytorch.org/): For deep learning support.
 - [SoundDevice](https://python-sounddevice.readthedocs.io/): For audio playback.
+- [VoicAI](https://aiartes.com/voiceai): for download voice sample of some famous people
