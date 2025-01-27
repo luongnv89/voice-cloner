@@ -10,7 +10,6 @@ class VoiceCloner:
     def __init__(self, model_name="tts_models/multilingual/multi-dataset/xtts_v2", speaker_wav="path_to_speaker_reference.wav", device=None):
         """
         Initialize the VoiceCloner class.
-
         Args:
             model_name (str): Name of the TTS model to use.
             speaker_wav (str): Path to the reference audio file for the speaker.
@@ -19,18 +18,18 @@ class VoiceCloner:
         self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
         self.speaker_wav = speaker_wav
         self.model_name = model_name
-
         # Initialize the TTS model
         self.tts = TTS(model_name=self.model_name, progress_bar=False, gpu=(self.device == "cuda"))
-
         # Verify the speaker reference file exists
         if not os.path.exists(self.speaker_wav):
             raise FileNotFoundError(f"Speaker reference file not found: {self.speaker_wav}")
 
+        # Extract the base name of the speaker reference file for use as a prefix
+        self.prefix = os.path.splitext(os.path.basename(speaker_wav))[0]
+
     def say(self, text_to_voice, language="en", play_audio=True, save_audio=False, speed=1.0):
         """
         Convert the input text to speech using the cloned voice and play it.
-
         Args:
             text_to_voice (str): Text to convert to speech.
             language (str): Language of the text (default is "en").
@@ -40,19 +39,14 @@ class VoiceCloner:
         """
         # Generate speech directly to an in-memory buffer
         with io.BytesIO() as audio_buffer:
-            self.tts.tts_to_file(
-                text=text_to_voice,
-                speaker_wav=self.speaker_wav,
-                file_path=audio_buffer,
-                language=language
-            )
+            self.tts.tts_to_file(text=text_to_voice, speaker_wav=self.speaker_wav, file_path=audio_buffer, language=language)
             audio_buffer.seek(0)
-            audio_data, samplerate = self._load_audio_from_buffer(audio_buffer)
+            audio_data, samplerate = sf.read(audio_buffer)
 
-        # Save the audio to a file if save_audio is True
+        # Save the audio data to a file if requested
         if save_audio:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Generate timestamp
-            save_path = f"audio_{timestamp}.wav"  # Create filename with timestamp
+            save_path = f"{self.prefix}_audio_{timestamp}.wav"  # Create filename with prefix and timestamp
             self._save_audio_to_file(audio_data, samplerate, save_path)
 
         # Play the audio if requested
@@ -62,14 +56,12 @@ class VoiceCloner:
     def _load_audio_from_buffer(self, buffer):
         """
         Load audio data from an in-memory buffer.
-
         Args:
             buffer: In-memory buffer containing audio data.
         Returns:
             audio_data (numpy.ndarray): Audio data as a NumPy array.
             samplerate (int): Sample rate of the audio.
         """
-
         buffer.seek(0)
         audio_data, samplerate = sf.read(buffer)
         return audio_data, samplerate
@@ -77,7 +69,6 @@ class VoiceCloner:
     def _save_audio_to_file(self, audio_data, samplerate, save_path):
         """
         Save the audio data to a file.
-
         Args:
             audio_data (numpy.ndarray): Audio data as a NumPy array.
             samplerate (int): Sample rate of the audio.
@@ -92,7 +83,6 @@ class VoiceCloner:
     def _play_audio(self, audio_data, samplerate, speed=1.0):
         """
         Play the audio data with adjustable speed.
-
         Args:
             audio_data (numpy.ndarray): Audio data as a NumPy array.
             samplerate (int): Sample rate of the audio.
