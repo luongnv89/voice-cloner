@@ -3,7 +3,7 @@ from voice_cloner import VoiceCloner
 
 def main():
     parser = argparse.ArgumentParser(description="Clone a voice and generate speech.")
-    parser.add_argument("-i", "--input_voice", required=True, help="Path to the original voice WAV file (REQUIRED).")
+    parser.add_argument("-i", "--input_voice", required=True, help="Path to the original voice WAV/MP3 file (REQUIRED).")
     parser.add_argument("-t", "--text", required=True, help="Text to be converted to speech (REQUIRED).")
 
     # Add error handling for missing or incorrect arguments
