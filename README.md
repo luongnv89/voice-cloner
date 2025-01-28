@@ -1,6 +1,6 @@
 # VoiceCloner: Text-to-Speech with Voice Cloning
 
-VoiceCloner is a Python class that uses the Coqui TTS library to clone a specific voice and generate speech in that voice. It supports multilingual text-to-speech, customizable playback speed, and saving audio files with timestamped filenames.
+VoiceCloner is a Python library that uses the Coqui TTS library to clone a specific voice and generate speech in that voice. It supports multilingual text-to-speech, customizable playback speed, and saving audio files with timestamped filenames.  It also includes command-line interface (CLI) tools for easy usage.
 
 ---
 
@@ -11,13 +11,14 @@ VoiceCloner is a Python class that uses the Coqui TTS library to clone a specifi
 - **Customizable Playback Speed**: Adjust the playback speed of the generated audio.
 - **Save Audio Files**: Save generated audio files with timestamped filenames.
 - **Low Latency Playback**: Play audio directly with minimal delay.
+- **Command-Line Interface (CLI)**:  Easily use the voice cloner from the command line.
 
 ---
 
 ## Installation and Setup
 
 ### Prerequisites
-1. **Python <=3.10**: Ensure Python is installed on your system.
+1. **Python <=3.10**: Ensure Python is installed on your system.  (Python 3.10 or lower is recommended due to compatibility with the TTS library.)
 2. **CUDA (Optional)**: For GPU acceleration, install CUDA and compatible drivers if you have an NVIDIA GPU.
 
 ### Step 1: Clone the Repository
@@ -27,11 +28,11 @@ git clone https://github.com/luongnv89/voice-cloner.git
 cd voice-cloner
 ```
 
-### Step 2: Set Up a Virtual Environment
+### Step 2: Set Up a Virtual Environment (Recommended)
 Create and activate a virtual environment to manage dependencies:
 ```bash
 python3.10 -m venv .venv
-source .venv/bin/activate  # On Windows: venv\Scripts\activate
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 ### Step 3: Install Dependencies
@@ -41,18 +42,19 @@ pip install torch torchaudio TTS sounddevice soundfile
 ```
 
 - **`torch`**: PyTorch for deep learning.
+- **`torchaudio`**:  Audio processing library for PyTorch.
 - **`TTS`**: Coqui TTS library for text-to-speech.
 - **`sounddevice`**: For playing audio.
 - **`soundfile`**: For reading/writing audio files.
 
 ### Step 4: Download the Speaker Reference File
-Place your speaker reference audio file (e.g., `speaker.wav`) in the project directory or specify its path when initializing the `VoiceCloner` class.
+Place your speaker reference audio file (e.g., `speaker.wav`) in the `voice-samples` directory or specify its path when initializing the `VoiceCloner` class.  A sample Barack Obama voice file is provided.
 
 ---
 
 ## Usage
 
-### Using the `VoiceCloner` Class
+### Using the `VoiceCloner` Class (Programmatically)
 
 #### 1. Initialize the `VoiceCloner` Class
 To use the `VoiceCloner` class, import it and initialize it with the path to your speaker reference file:
@@ -60,16 +62,12 @@ To use the `VoiceCloner` class, import it and initialize it with the path to you
 from voice_cloner import VoiceCloner
 
 # Initialize the VoiceCloner class
-speaker_wav = "path_to_speaker_reference.wav"  # Replace with your speaker file path
+speaker_wav = "./voice-samples/barack-obama_cloned.mp3"  # Replace with your speaker file path
 cloner = VoiceCloner(speaker_wav=speaker_wav)
-```
 
-#### 2. Convert Text to Speech
-Use the `say()` method to convert text to speech and play it:
-```python
 # Convert text to speech and play it
 message = "Hello, this is a test of the text-to-speech system."
-cloner.say(message, language="en", play_audio=True, save_audio=True, speed=1.5)
+cloner.say(message)
 ```
 
 - **`language`**: Specify the language of the text (e.g., `"en"` for English).
@@ -77,24 +75,42 @@ cloner.say(message, language="en", play_audio=True, save_audio=True, speed=1.5)
 - **`save_audio`**: Set to `True` to save the audio file with a timestamped filename.
 - **`speed`**: Adjust the playback speed (e.g., `1.5` for 1.5x speed).
 
+
 #### 3. Save Audio to a File
-If `save_audio=True`, the audio file will be saved with a timestamped filename (e.g., `audio_20231025_143022.wav`).
+If `save_audio=True`, the audio file will be saved with a timestamped filename (e.g., `audio_YYYYMMDD_HHMMSS.wav`).
+
+
+### Using the CLI Tool (`vcloner.py`)
+
+The `vcloner.py` script provides a command-line interface for easier usage:
+
+```bash
+python vcloner.py -i path/to/input_voice.wav -t "Your text here"
+```
+
+- `-i` or `--input_voice`: Path to your input voice WAV file (REQUIRED).
+- `-t` or `--text`: Text to be converted to speech (REQUIRED).
+
+**Example:**
+
+```bash
+python vcloner.py -i ./voice-samples/barack-obama_cloned.mp3 -t "This is a test"
+```
+
+This will generate a WAV file containing the specified text spoken in the cloned voice.
 
 ---
 
-### Example Script
-Here’s an example script that uses the `VoiceCloner` class:
+### Example Script (`main.py`)
+
+The `main.py` file demonstrates how to use the `VoiceCloner` class to process multiple transcripts:
+
 ```python
 from voice_cloner import VoiceCloner
 
-# Initialize VoiceCloner
-speaker_wav = "path_to_speaker_reference.wav"
-cloner = VoiceCloner(speaker_wav=speaker_wav)
-
-# Convert text to speech and play it
-message = "This is an example of text-to-speech with a cloned voice and customizable playback speed."
-cloner.say(message, language="en", play_audio=True, save_audio=True, speed=1.2)
+# ... (code as shown in the original main.py file)
 ```
+
 
 ---
 
@@ -116,7 +132,7 @@ Example:
 from voice_cloner import VoiceCloner
 
 # Initialize and use VoiceCloner
-speaker_wav = "path_to_speaker_reference.wav"
+speaker_wav = "path/to/speaker_reference.wav"
 cloner = VoiceCloner(speaker_wav=speaker_wav)
 
 # Convert text to speech
@@ -140,6 +156,7 @@ If audio playback doesn’t work:
 ### 3. **File Not Found Error**
 If the speaker reference file is not found:
 - Double-check the file path provided to the `VoiceCloner` class.
+- Make sure the file exists and the path is correct.
 
 ---
 
