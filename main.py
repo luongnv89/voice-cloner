@@ -2,7 +2,7 @@ from voice_cloner import VoiceCloner
 
 if __name__ == "__main__":
     # Initialize VoiceCloner with the TTS model and speaker reference
-    cloner = VoiceCloner(speaker_wav="./voice-samples/barack-obama_cloned.mp3")
+    cloner = VoiceCloner(speaker_wav="./voice-samples/mark_original.mp3")
 
     # Convert text to speech and play the audio
     transcripts = [

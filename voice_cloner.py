@@ -6,8 +6,14 @@ import soundfile as sf
 from TTS.api import TTS
 from datetime import datetime
 
+
 class VoiceCloner:
-    def __init__(self, model_name="tts_models/multilingual/multi-dataset/xtts_v2", speaker_wav="path_to_speaker_reference.wav", device=None):
+    def __init__(
+        self,
+        model_name="tts_models/multilingual/multi-dataset/xtts_v2",
+        speaker_wav="path_to_speaker_reference.wav",
+        device=None,
+    ):
         """
         Initialize the VoiceCloner class.
         Args:
@@ -15,19 +21,27 @@ class VoiceCloner:
             speaker_wav (str): Path to the reference audio file for the speaker.
             device (str): Device to use for inference ('cuda' or 'cpu'). If None, it auto-detects.
         """
-        self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = (
+            device if device else ("cuda" if torch.cuda.is_available() else "cpu")
+        )
         self.speaker_wav = speaker_wav
         self.model_name = model_name
         # Initialize the TTS model
-        self.tts = TTS(model_name=self.model_name, progress_bar=False, gpu=(self.device == "cuda"))
+        self.tts = TTS(
+            model_name=self.model_name, progress_bar=False, gpu=(self.device == "cuda")
+        )
         # Verify the speaker reference file exists
         if not os.path.exists(self.speaker_wav):
-            raise FileNotFoundError(f"Speaker reference file not found: {self.speaker_wav}")
+            raise FileNotFoundError(
+                f"Speaker reference file not found: {self.speaker_wav}"
+            )
 
         # Extract the base name of the speaker reference file for use as a prefix
         self.prefix = os.path.splitext(os.path.basename(speaker_wav))[0]
 
-    def say(self, text_to_voice, language="en", play_audio=True, save_audio=False, speed=1.0):
+    def say(
+        self, text_to_voice, language="en", play_audio=True, save_audio=False, speed=1.0
+    ):
         """
         Convert the input text to speech using the cloned voice and play it.
         Args:
@@ -39,7 +53,14 @@ class VoiceCloner:
         """
         # Generate speech directly to an in-memory buffer
         with io.BytesIO() as audio_buffer:
-            self.tts.tts_to_file(text=text_to_voice, speaker_wav=self.speaker_wav, file_path=audio_buffer, language=language)
+            self.tts.tts_to_file(
+                text=text_to_voice,
+                speaker_wav=self.speaker_wav,
+                file_path=audio_buffer,
+                language=language,
+                gpt_cond_len=128,
+                temperature=0.7,
+            )
             audio_buffer.seek(0)
             audio_data, samplerate = sf.read(audio_buffer)
 
