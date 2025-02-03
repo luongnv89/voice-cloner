@@ -49,7 +49,7 @@ class VoiceCloningApp(QMainWindow):
         super().__init__()
         self.current_audio = None
         self.init_ui()
-        self.setWindowTitle("VoiceClone Pro")
+        self.setWindowTitle("VoiceCloner")
         self.setMinimumSize(600, 400)
         self.setWindowIcon(QIcon(str(Path(__file__).parent / "icon.jpg")))
 
@@ -64,16 +64,16 @@ class VoiceCloningApp(QMainWindow):
 
         # Text input
         self.text_input = QTextEdit()
-        self.text_input.setPlaceholderText("Enter text to clone...")
+        self.text_input.setPlaceholderText("Enter text to generate audio...")
         self.text_input.setAcceptRichText(False)
         self.text_input.setMinimumHeight(100)
-        layout.addWidget(QLabel("Text to Clone:"))
+        layout.addWidget(QLabel("Input Text"))
         layout.addWidget(self.text_input)
 
         # Voice file selection
         self.voice_label = QLabel("No voice file selected")
         self.voice_label.setWordWrap(True)
-        self.btn_select_voice = QPushButton("Select Voice File")
+        self.btn_select_voice = QPushButton("Select Original Voice")
         self.btn_select_voice.clicked.connect(self.select_voice_file)
 
         file_selector_layout = QHBoxLayout()
@@ -82,7 +82,7 @@ class VoiceCloningApp(QMainWindow):
         layout.addLayout(file_selector_layout)
 
         # Generate button
-        self.btn_generate = QPushButton("Generate Voice Clone")
+        self.btn_generate = QPushButton("Generate Audio")
         self.btn_generate.clicked.connect(self.start_cloning)
         self.btn_generate.setStyleSheet("""
             QPushButton {
@@ -128,16 +128,16 @@ class VoiceCloningApp(QMainWindow):
 
     def start_cloning(self):
         if not hasattr(self, 'voice_path'):
-            QMessageBox.warning(self, "Missing File", "Please select a voice file")
+            QMessageBox.warning(self, "Missing Original Voice", "Please select an audio file (.wav, .m3, .ogg)")
             return
 
         text = self.text_input.toPlainText().strip()
         if not text:
-            QMessageBox.warning(self, "Missing Text", "Please enter text to clone")
+            QMessageBox.warning(self, "Missing Text", "Please enter text to generate audio")
             return
         # Disable UI during processing
         self.btn_generate.setEnabled(False)
-        self.btn_generate.setText("Generating...")
+        self.btn_generate.setText("Generating audio ...")
         self.btn_play.hide()
         self.btn_save.hide()
         # Disable the "Select Voice File" button
@@ -156,7 +156,7 @@ class VoiceCloningApp(QMainWindow):
     def on_cloning_finished(self, output_path, text):
         self.current_audio = output_path
         self.btn_generate.setEnabled(True)
-        self.btn_generate.setText("Generate Voice Clone")
+        self.btn_generate.setText("Generate Audio")
         self.btn_play.show()
         self.btn_save.show()
 
@@ -166,8 +166,8 @@ class VoiceCloningApp(QMainWindow):
     @Slot(str)
     def on_cloning_error(self, message):
         self.btn_generate.setEnabled(True)
-        self.btn_generate.setText("Generate Voice Clone")
-        QMessageBox.critical(self, "Error", f"Cloning failed:\n{message}")
+        self.btn_generate.setText("Generate Audio")
+        QMessageBox.critical(self, "Error", f"Failed:\n{message}")
 
         # Re-enable the "Select Voice File" button after cloning error
         self.btn_select_voice.setEnabled(True)

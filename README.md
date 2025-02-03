@@ -54,6 +54,14 @@ Place your speaker reference audio file (e.g., `speaker.wav`) in the `voice-samp
 
 ## Usage
 
+### `VoiceCloner` application with simple GUI
+To use the `VoiceCloner` application with interface
+
+```bash
+python voice_cloning_app.py
+```
+![VoiceCloner](./voice-cloner-app.png)
+
 ### Using the `VoiceCloner` Class (Programmatically)
 
 #### 1. Initialize the `VoiceCloner` Class
