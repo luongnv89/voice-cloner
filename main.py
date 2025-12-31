@@ -12,5 +12,5 @@ if __name__ == "__main__":
         # "Ready to use SlideSpeech? Here’s how to get started! First, install Python and the required libraries using pip. Next, download the SlideSpeech script and add your presentation and audio files. Finally, run the script, and you’re all set! SlideSpeech is perfect for classroom lectures, business pitches, or even self-running exhibits in museums or kiosks. Try SlideSpeech today and take your presentations to the next level. Thank you for listening, and I hope you find SlideSpeech as useful as I do!"
     ]
 
-    for i, transcript in enumerate(transcripts):
+    for transcript in transcripts:
         cloner.say(transcript, language="en", play_audio=False, save_audio=True, speed=1.0)

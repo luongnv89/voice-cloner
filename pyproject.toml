@@ -1,0 +1,117 @@
+[project]
+name = "voice-cloner"
+version = "0.2.0"
+description = "Voice cloning application supporting multiple TTS engines"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.5.1",
+    "torchaudio>=2.5.1",
+    "TTS>=0.22.0",
+    "sounddevice>=0.5.1",
+    "soundfile>=0.13.0",
+    "PySide6>=6.4.0",
+    "rich>=13.0.0",
+    "pygame>=2.5.0",
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+chatterbox = [
+    "chatterbox-tts>=0.1.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.8.0",
+    "bandit>=1.8.0",
+    "pre-commit>=4.0.0",
+]
+
+[project.scripts]
+vcloner = "vcloner:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["engines*", "gui*"]
+
+# Ruff configuration (fast Python linter and formatter)
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "*.egg-info",
+    "build",
+    "dist",
+    "node_modules",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "B905",   # zip without explicit strict parameter
+    "SIM108", # use ternary operator instead of if-else
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["engines", "gui"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# Bandit configuration (security linter)
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "venv", "node_modules"]
+skips = ["B101"]  # Skip assert warnings in tests
+
+# Pytest configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "tests/*",
+    ".venv/*",
+    "venv/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

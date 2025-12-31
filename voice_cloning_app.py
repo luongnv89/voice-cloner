@@ -1,20 +1,29 @@
+import contextlib
 import sys
-import os
-import uuid
 import tempfile
+import uuid
 from pathlib import Path
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout,
-    QHBoxLayout, QLabel, QTextEdit, QPushButton,
-    QFileDialog, QMessageBox, QComboBox, QGroupBox
-)
-from PySide6.QtCore import Qt, QThread, Signal, Slot
-from PySide6.QtGui import QIcon
-import pygame
 
-from voice_cloner import VoiceCloner
-from tts_factory import TTSFactory
+import pygame
+from PySide6.QtCore import QThread, Signal, Slot
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QFileDialog,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
 from gui.engine_controls import EngineControlsFactory
+from voice_cloner import VoiceCloner
 
 
 class CloneThread(QThread):
@@ -41,18 +50,11 @@ class CloneThread(QThread):
             self.output_path = output_dir / f"output_{uuid.uuid4().hex}.wav"
 
             # Create VoiceCloner with selected engine
-            voice_cloner = VoiceCloner(
-                speaker_wav=self.voice_path,
-                engine=self.engine_name
-            )
+            voice_cloner = VoiceCloner(speaker_wav=self.voice_path, engine=self.engine_name)
 
             # Generate audio
             voice_cloner.say(
-                self.text,
-                play_audio=False,
-                save_audio=True,
-                output_file=str(self.output_path),
-                **self.engine_params
+                self.text, play_audio=False, save_audio=True, output_file=str(self.output_path), **self.engine_params
             )
             self.finished.emit(str(self.output_path), self.text)
         except Exception as e:
@@ -104,15 +106,11 @@ class VoiceCloningApp(QMainWindow):
     def _cleanup_temp_files(self):
         """Clean up temporary files."""
         if self._temp_voice_file and Path(self._temp_voice_file).exists():
-            try:
+            with contextlib.suppress(OSError):
                 Path(self._temp_voice_file).unlink()
-            except OSError:
-                pass
         if self.current_audio and Path(self.current_audio).exists():
-            try:
+            with contextlib.suppress(OSError):
                 Path(self.current_audio).unlink()
-            except OSError:
-                pass
 
     def init_ui(self):
         main_widget = QWidget()
@@ -238,26 +236,18 @@ class VoiceCloningApp(QMainWindow):
             QMessageBox.warning(
                 self,
                 "Missing Voice Reference",
-                "Please select an audio file (.wav, .mp3, .ogg, .flac) as voice reference."
+                "Please select an audio file (.wav, .mp3, .ogg, .flac) as voice reference.",
             )
             return
 
         text = self.text_input.toPlainText().strip()
         if not text:
-            QMessageBox.warning(
-                self,
-                "Missing Text",
-                "Please enter text to generate audio."
-            )
+            QMessageBox.warning(self, "Missing Text", "Please enter text to generate audio.")
             return
 
         # Check if a thread is already running
         if self.clone_thread and self.clone_thread.isRunning():
-            QMessageBox.warning(
-                self,
-                "Generation In Progress",
-                "Please wait for the current generation to complete."
-            )
+            QMessageBox.warning(self, "Generation In Progress", "Please wait for the current generation to complete.")
             return
 
         # Disable UI during processing
@@ -279,19 +269,12 @@ class VoiceCloningApp(QMainWindow):
             self._temp_voice_file = str(temp_voice)
         except (OSError, PermissionError, MemoryError) as e:
             self._reset_ui_state()
-            QMessageBox.critical(
-                self,
-                "File Error",
-                f"Cannot read voice file: {e}"
-            )
+            QMessageBox.critical(self, "File Error", f"Cannot read voice file: {e}")
             return
 
         # Start cloning thread
         self.clone_thread = CloneThread(
-            text=text,
-            voice_path=str(temp_voice),
-            engine_name=engine_name,
-            engine_params=engine_params
+            text=text, voice_path=str(temp_voice), engine_name=engine_name, engine_params=engine_params
         )
         self.clone_thread.finished.connect(self.on_cloning_finished)
         self.clone_thread.error_occurred.connect(self.on_cloning_error)
@@ -306,11 +289,7 @@ class VoiceCloningApp(QMainWindow):
     @Slot(str)
     def on_cloning_error(self, message: str):
         self._reset_ui_state()
-        QMessageBox.critical(
-            self,
-            "Generation Error",
-            f"Failed to generate audio:\n\n{message}"
-        )
+        QMessageBox.critical(self, "Generation Error", f"Failed to generate audio:\n\n{message}")
 
     def _reset_ui_state(self):
         """Reset UI to normal state after generation."""
@@ -329,19 +308,13 @@ class VoiceCloningApp(QMainWindow):
     def save_audio(self):
         if self.current_audio:
             file_path, _ = QFileDialog.getSaveFileName(
-                self,
-                "Save Audio File",
-                f"cloned_voice_{uuid.uuid4().hex[:8]}.wav",
-                "Wave Files (*.wav)"
+                self, "Save Audio File", f"cloned_voice_{uuid.uuid4().hex[:8]}.wav", "Wave Files (*.wav)"
             )
             if file_path:
                 import shutil
+
                 shutil.copy2(self.current_audio, file_path)
-                QMessageBox.information(
-                    self,
-                    "Saved",
-                    f"Audio file saved to:\n{file_path}"
-                )
+                QMessageBox.information(self, "Saved", f"Audio file saved to:\n{file_path}")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,10 @@
+import logging
 import os
 import tempfile
-from typing import Tuple, Dict, Any, Optional, List
+from typing import Any
+
 import numpy as np
 import soundfile as sf
-import logging
 
 from tts_engine_base import TTSEngineBase
 
@@ -20,13 +21,30 @@ def _ensure_mono(audio_data: np.ndarray) -> np.ndarray:
 class CoquiEngine(TTSEngineBase):
     """TTS engine using Coqui TTS (XTTS v2)."""
 
-    SUPPORTED_LANGUAGES = ["en", "es", "fr", "de", "it", "pt", "pl", "tr", "ru", "nl", "cs", "ar", "zh", "ja", "hu", "ko"]
+    SUPPORTED_LANGUAGES = [
+        "en",
+        "es",
+        "fr",
+        "de",
+        "it",
+        "pt",
+        "pl",
+        "tr",
+        "ru",
+        "nl",
+        "cs",
+        "ar",
+        "zh",
+        "ja",
+        "hu",
+        "ko",
+    ]
 
     def __init__(
         self,
         speaker_wav: str,
-        device: Optional[str] = None,
-        model_name: str = "tts_models/multilingual/multi-dataset/xtts_v2"
+        device: str | None = None,
+        model_name: str = "tts_models/multilingual/multi-dataset/xtts_v2",
     ):
         super().__init__(speaker_wav, device)
         self.model_name = model_name
@@ -37,23 +55,15 @@ class CoquiEngine(TTSEngineBase):
         """Lazy load TTS model on first use."""
         if self._tts is None:
             from TTS.api import TTS
+
             logger.info(f"Loading Coqui TTS model: {self.model_name}")
-            self._tts = TTS(
-                model_name=self.model_name,
-                progress_bar=False,
-                gpu=(self.device == "cuda")
-            )
+            self._tts = TTS(model_name=self.model_name, progress_bar=False, gpu=(self.device == "cuda"))
             logger.info("Coqui TTS model loaded successfully")
         return self._tts
 
     def generate(
-        self,
-        text: str,
-        language: str = "en",
-        temperature: float = 0.7,
-        gpt_cond_len: int = 128,
-        **kwargs
-    ) -> Tuple[np.ndarray, int]:
+        self, text: str, language: str = "en", temperature: float = 0.7, gpt_cond_len: int = 128, **kwargs
+    ) -> tuple[np.ndarray, int]:
         """
         Generate audio using Coqui TTS.
 
@@ -86,28 +96,28 @@ class CoquiEngine(TTSEngineBase):
             if os.path.exists(temp_path):
                 os.remove(temp_path)
 
-    def get_supported_parameters(self) -> Dict[str, Dict[str, Any]]:
+    def get_supported_parameters(self) -> dict[str, dict[str, Any]]:
         return {
             "language": {
                 "type": str,
                 "default": "en",
                 "description": "Language code (en, es, fr, de, etc.)",
-                "options": self.SUPPORTED_LANGUAGES
+                "options": self.SUPPORTED_LANGUAGES,
             },
             "temperature": {
                 "type": float,
                 "default": 0.7,
                 "description": "Sampling temperature (0.1-1.0)",
                 "min": 0.1,
-                "max": 1.0
+                "max": 1.0,
             },
             "gpt_cond_len": {
                 "type": int,
                 "default": 128,
                 "description": "GPT conditioning length",
                 "min": 32,
-                "max": 256
-            }
+                "max": 256,
+            },
         }
 
     @property
@@ -115,5 +125,5 @@ class CoquiEngine(TTSEngineBase):
         return "Coqui XTTS v2"
 
     @property
-    def supports_languages(self) -> List[str]:
+    def supports_languages(self) -> list[str]:
         return self.SUPPORTED_LANGUAGES

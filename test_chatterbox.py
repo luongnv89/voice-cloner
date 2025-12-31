@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from voice_cloner import VoiceCloner
 
+
 def main():
     # Use a voice sample
     voice_sample = "./voice-samples/geralt_original.mp3"
@@ -19,10 +20,7 @@ def main():
 
     # Create VoiceCloner with Chatterbox Turbo
     print("Initializing VoiceCloner with Chatterbox Turbo...")
-    cloner = VoiceCloner.from_chatterbox(
-        speaker_wav=voice_sample,
-        variant="turbo"
-    )
+    cloner = VoiceCloner.from_chatterbox(speaker_wav=voice_sample, variant="turbo")
 
     # Generate speech
     text = "Hello, I am Geralt of Rivia. I hunt monsters for coin."
@@ -35,7 +33,7 @@ def main():
         save_audio=True,
         output_file=output_file,
         cfg_weight=0.5,
-        exaggeration=0.5
+        exaggeration=0.5,
     )
 
     print(f"\nDone! Audio saved to: {output_file}")
@@ -49,6 +47,7 @@ def main():
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

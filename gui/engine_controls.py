@@ -1,9 +1,17 @@
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider,
-    QComboBox, QPushButton, QGroupBox, QMessageBox
-)
+from typing import Any
+
 from PySide6.QtCore import Qt, Signal
-from typing import Dict, Any
+from PySide6.QtWidgets import (
+    QComboBox,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QSlider,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class EngineControlsBase(QWidget):
@@ -11,7 +19,7 @@ class EngineControlsBase(QWidget):
 
     parameters_changed = Signal(dict)
 
-    def get_parameters(self) -> Dict[str, Any]:
+    def get_parameters(self) -> dict[str, Any]:
         """Return current parameter values."""
         raise NotImplementedError
 
@@ -65,9 +73,7 @@ class CoquiControls(EngineControlsBase):
         self.temp_slider.setValue(70)
         self.temp_slider.valueChanged.connect(self._on_param_changed)
         self.temp_label = QLabel("0.70")
-        self.temp_slider.valueChanged.connect(
-            lambda v: self.temp_label.setText(f"{v/100:.2f}")
-        )
+        self.temp_slider.valueChanged.connect(lambda v: self.temp_label.setText(f"{v/100:.2f}"))
         temp_layout.addWidget(self.temp_slider)
         temp_layout.addWidget(self.temp_label)
         temp_group.setLayout(temp_layout)
@@ -78,7 +84,7 @@ class CoquiControls(EngineControlsBase):
     def _on_param_changed(self):
         self.parameters_changed.emit(self.get_parameters())
 
-    def get_parameters(self) -> Dict[str, Any]:
+    def get_parameters(self) -> dict[str, Any]:
         return {
             "language": self.lang_combo.currentData(),
             "temperature": self.temp_slider.value() / 100.0,
@@ -107,9 +113,7 @@ class ChatterboxControls(EngineControlsBase):
         self.cfg_slider.setValue(50)
         self.cfg_slider.valueChanged.connect(self._on_param_changed)
         self.cfg_label = QLabel("0.50")
-        self.cfg_slider.valueChanged.connect(
-            lambda v: self.cfg_label.setText(f"{v/100:.2f}")
-        )
+        self.cfg_slider.valueChanged.connect(lambda v: self.cfg_label.setText(f"{v/100:.2f}"))
         cfg_layout.addWidget(QLabel("Less"))
         cfg_layout.addWidget(self.cfg_slider)
         cfg_layout.addWidget(QLabel("More"))
@@ -125,9 +129,7 @@ class ChatterboxControls(EngineControlsBase):
         self.exag_slider.setValue(50)
         self.exag_slider.valueChanged.connect(self._on_param_changed)
         self.exag_label = QLabel("0.50")
-        self.exag_slider.valueChanged.connect(
-            lambda v: self.exag_label.setText(f"{v/100:.2f}")
-        )
+        self.exag_slider.valueChanged.connect(lambda v: self.exag_label.setText(f"{v/100:.2f}"))
         exag_layout.addWidget(QLabel("Subtle"))
         exag_layout.addWidget(self.exag_slider)
         exag_layout.addWidget(QLabel("Dramatic"))
@@ -159,10 +161,10 @@ class ChatterboxControls(EngineControlsBase):
             f"Example usage:\n"
             f"'That's hilarious [laugh]!'\n"
             f"'*sighs* [sigh] I can't believe this...'\n\n"
-            f"Place tags where you want the sound to occur."
+            f"Place tags where you want the sound to occur.",
         )
 
-    def get_parameters(self) -> Dict[str, Any]:
+    def get_parameters(self) -> dict[str, Any]:
         return {
             "cfg_weight": self.cfg_slider.value() / 100.0,
             "exaggeration": self.exag_slider.value() / 100.0,

@@ -1,7 +1,8 @@
-import os
-from typing import Tuple, Dict, Any, Optional, List, Literal
-import numpy as np
 import logging
+import os
+from typing import Any, Literal
+
+import numpy as np
 
 from tts_engine_base import TTSEngineBase
 
@@ -19,12 +20,7 @@ class ChatterboxEngine(TTSEngineBase):
     # Paralinguistic tags supported by Turbo variant
     PARALINGUISTIC_TAGS = ["laugh", "chuckle", "cough", "sigh", "gasp", "yawn"]
 
-    def __init__(
-        self,
-        speaker_wav: str,
-        device: Optional[str] = None,
-        variant: ChatterboxVariant = "turbo"
-    ):
+    def __init__(self, speaker_wav: str, device: str | None = None, variant: ChatterboxVariant = "turbo"):
         super().__init__(speaker_wav, device)
         self.variant = variant
         self._model = None  # Lazy loading
@@ -37,17 +33,13 @@ class ChatterboxEngine(TTSEngineBase):
             logger.info(f"Loading Chatterbox {self.variant} model...")
             try:
                 from chatterbox.tts import ChatterboxTTS
+
                 self._model = ChatterboxTTS.from_pretrained(device=self.device)
                 self._sample_rate = self._model.sr
                 logger.info(f"Chatterbox {self.variant} model loaded successfully")
             except ImportError as e:
-                logger.error(
-                    "chatterbox-tts package not installed. "
-                    "Install with: pip install chatterbox-tts"
-                )
-                raise ImportError(
-                    "chatterbox-tts package required. Install with: pip install chatterbox-tts"
-                ) from e
+                logger.error("chatterbox-tts package not installed. " "Install with: pip install chatterbox-tts")
+                raise ImportError("chatterbox-tts package required. Install with: pip install chatterbox-tts") from e
         return self._model
 
     @property
@@ -58,13 +50,8 @@ class ChatterboxEngine(TTSEngineBase):
         return self._sample_rate
 
     def generate(
-        self,
-        text: str,
-        language: str = "en",
-        cfg_weight: float = 0.5,
-        exaggeration: float = 0.5,
-        **kwargs
-    ) -> Tuple[np.ndarray, int]:
+        self, text: str, language: str = "en", cfg_weight: float = 0.5, exaggeration: float = 0.5, **kwargs
+    ) -> tuple[np.ndarray, int]:
         """
         Generate audio using Chatterbox.
 
@@ -94,35 +81,32 @@ class ChatterboxEngine(TTSEngineBase):
 
         return audio_data, self.sample_rate
 
-    def get_supported_parameters(self) -> Dict[str, Dict[str, Any]]:
+    def get_supported_parameters(self) -> dict[str, dict[str, Any]]:
         params = {
             "cfg_weight": {
                 "type": float,
                 "default": 0.5,
                 "description": "CFG weight - controls text adherence (0.0-1.0). Lower for fast speakers.",
                 "min": 0.0,
-                "max": 1.0
+                "max": 1.0,
             },
             "exaggeration": {
                 "type": float,
                 "default": 0.5,
                 "description": "Expressiveness level (0.0-1.5). Higher = more dramatic.",
                 "min": 0.0,
-                "max": 1.5
-            }
+                "max": 1.5,
+            },
         }
         return params
 
     @property
     def name(self) -> str:
-        variant_names = {
-            "turbo": "Chatterbox Turbo (350M)",
-            "standard": "Chatterbox Standard (500M)"
-        }
+        variant_names = {"turbo": "Chatterbox Turbo (350M)", "standard": "Chatterbox Standard (500M)"}
         return variant_names.get(self.variant, "Chatterbox")
 
     @property
-    def supports_languages(self) -> List[str]:
+    def supports_languages(self) -> list[str]:
         return self.SUPPORTED_LANGUAGES
 
     @property
@@ -130,13 +114,13 @@ class ChatterboxEngine(TTSEngineBase):
         """Check if this variant supports paralinguistic tags."""
         return self.variant == "turbo"
 
-    def get_paralinguistic_tags(self) -> List[str]:
+    def get_paralinguistic_tags(self) -> list[str]:
         """Get list of supported paralinguistic tags for Turbo variant."""
         if self.supports_paralinguistic_tags:
             return self.PARALINGUISTIC_TAGS
         return []
 
-    def validate_text(self, text: str) -> Tuple[bool, str]:
+    def validate_text(self, text: str) -> tuple[bool, str]:
         """
         Validate text for this engine variant.
 
@@ -149,7 +133,7 @@ class ChatterboxEngine(TTSEngineBase):
             return False, "Text cannot be empty"
 
         # Check for paralinguistic tags in non-Turbo variants
-        tags_found = re.findall(r'\[(\w+)\]', text)
+        tags_found = re.findall(r"\[(\w+)\]", text)
         if tags_found and not self.supports_paralinguistic_tags:
             return False, (
                 f"Paralinguistic tags {tags_found} are only supported in Turbo variant. "
@@ -160,9 +144,6 @@ class ChatterboxEngine(TTSEngineBase):
         if tags_found and self.supports_paralinguistic_tags:
             invalid_tags = [t for t in tags_found if t not in self.PARALINGUISTIC_TAGS]
             if invalid_tags:
-                return False, (
-                    f"Unknown tags: {invalid_tags}. "
-                    f"Supported: {self.PARALINGUISTIC_TAGS}"
-                )
+                return False, (f"Unknown tags: {invalid_tags}. " f"Supported: {self.PARALINGUISTIC_TAGS}")
 
         return True, "OK"

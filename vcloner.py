@@ -1,17 +1,15 @@
 import argparse
-import os
 import logging
-from rich.logging import RichHandler
+import os
+
 from rich.console import Console
-from voice_cloner import VoiceCloner
+from rich.logging import RichHandler
+
 from tts_factory import TTSFactory
+from voice_cloner import VoiceCloner
 
 # Configure logging with Rich for a better terminal experience
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-    handlers=[RichHandler(rich_tracebacks=True)]
-)
+logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[RichHandler(rich_tracebacks=True)])
 logger = logging.getLogger("voice_cloner")
 
 console = Console()
@@ -39,39 +37,28 @@ Examples:
 
   # List available engines
   python vcloner.py --list-engines
-        """
+        """,
     )
 
     parser.add_argument(
-        "-i", "--input_voice",
-        help="Path to the original voice WAV/MP3 file (REQUIRED for generation)."
+        "-i", "--input_voice", help="Path to the original voice WAV/MP3 file (REQUIRED for generation)."
     )
+    parser.add_argument("-t", "--text", help="Text to be converted to speech (REQUIRED for generation).")
+    parser.add_argument("-o", "--output_file", help="Path and name of the output audio file (REQUIRED for generation).")
     parser.add_argument(
-        "-t", "--text",
-        help="Text to be converted to speech (REQUIRED for generation)."
-    )
-    parser.add_argument(
-        "-o", "--output_file",
-        help="Path and name of the output audio file (REQUIRED for generation)."
-    )
-    parser.add_argument(
-        "-e", "--engine",
+        "-e",
+        "--engine",
         default="coqui",
         choices=available_engines,
-        help=f"TTS engine to use. Available: {engines_help}. Default: coqui"
+        help=f"TTS engine to use. Available: {engines_help}. Default: coqui",
     )
     parser.add_argument(
-        "-l", "--language",
-        default="en",
-        help="Language code (default: en). For Coqui: en, es, fr, de, etc."
+        "-l", "--language", default="en", help="Language code (default: en). For Coqui: en, es, fr, de, etc."
     )
 
     # Coqui-specific arguments
     parser.add_argument(
-        "--temperature",
-        type=float,
-        default=0.7,
-        help="Coqui: Sampling temperature (0.1-1.0). Default: 0.7"
+        "--temperature", type=float, default=0.7, help="Coqui: Sampling temperature (0.1-1.0). Default: 0.7"
     )
 
     # Chatterbox-specific arguments
@@ -79,26 +66,18 @@ Examples:
         "--cfg-weight",
         type=float,
         default=0.5,
-        help="Chatterbox: CFG weight for text adherence (0.0-1.0). Lower for fast speakers. Default: 0.5"
+        help="Chatterbox: CFG weight for text adherence (0.0-1.0). Lower for fast speakers. Default: 0.5",
     )
     parser.add_argument(
         "--exaggeration",
         type=float,
         default=0.5,
-        help="Chatterbox: Expressiveness level (0.0-1.5). Higher = more dramatic. Default: 0.5"
+        help="Chatterbox: Expressiveness level (0.0-1.5). Higher = more dramatic. Default: 0.5",
     )
 
     # Utility arguments
-    parser.add_argument(
-        "--list-engines",
-        action="store_true",
-        help="List available TTS engines and exit."
-    )
-    parser.add_argument(
-        "--no-play",
-        action="store_true",
-        help="Don't play audio after generation."
-    )
+    parser.add_argument("--list-engines", action="store_true", help="List available TTS engines and exit.")
+    parser.add_argument("--no-play", action="store_true", help="Don't play audio after generation.")
 
     args = parser.parse_args()
 
@@ -125,7 +104,7 @@ Examples:
         os.makedirs(output_dir, exist_ok=True)
 
     try:
-        logger.info(f"[bold cyan]Initializing VoiceCloner[/bold cyan]")
+        logger.info("[bold cyan]Initializing VoiceCloner[/bold cyan]")
         logger.info(f"  Engine: {args.engine}")
         logger.info(f"  Reference voice: {args.input_voice}")
 
@@ -139,18 +118,11 @@ Examples:
             engine_kwargs["exaggeration"] = args.exaggeration
 
         # Create cloner
-        cloner = VoiceCloner(
-            speaker_wav=args.input_voice,
-            engine=args.engine
-        )
+        cloner = VoiceCloner(speaker_wav=args.input_voice, engine=args.engine)
 
         logger.info("[bold green]Generating speech...[/bold green]")
         cloner.say(
-            args.text,
-            play_audio=not args.no_play,
-            save_audio=True,
-            output_file=args.output_file,
-            **engine_kwargs
+            args.text, play_audio=not args.no_play, save_audio=True, output_file=args.output_file, **engine_kwargs
         )
 
         logger.info(f"[bold green]Speech saved to:[/bold green] {args.output_file}")

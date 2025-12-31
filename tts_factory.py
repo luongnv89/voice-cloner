@@ -1,4 +1,3 @@
-from typing import Dict, Type, Optional, List
 import logging
 
 from tts_engine_base import TTSEngineBase
@@ -10,19 +9,13 @@ class TTSFactory:
     """Factory for creating TTS engine instances."""
 
     # Engine registry: name -> (engine_class, variant_kwargs)
-    _registry: Dict[str, tuple] = {}
+    _registry: dict[str, tuple] = {}
 
     # Engine display names for UI
-    _display_names: Dict[str, str] = {}
+    _display_names: dict[str, str] = {}
 
     @classmethod
-    def register(
-        cls,
-        name: str,
-        engine_class: Type[TTSEngineBase],
-        display_name: str,
-        **default_kwargs
-    ):
+    def register(cls, name: str, engine_class: type[TTSEngineBase], display_name: str, **default_kwargs):
         """
         Register an engine class.
 
@@ -37,13 +30,7 @@ class TTSFactory:
         logger.debug(f"Registered TTS engine: {name}")
 
     @classmethod
-    def create(
-        cls,
-        engine_name: str,
-        speaker_wav: str,
-        device: Optional[str] = None,
-        **engine_kwargs
-    ) -> TTSEngineBase:
+    def create(cls, engine_name: str, speaker_wav: str, device: str | None = None, **engine_kwargs) -> TTSEngineBase:
         """
         Create an engine instance.
 
@@ -58,10 +45,7 @@ class TTSFactory:
         """
         if engine_name not in cls._registry:
             available = list(cls._registry.keys())
-            raise ValueError(
-                f"Unknown engine: '{engine_name}'. "
-                f"Available engines: {available}"
-            )
+            raise ValueError(f"Unknown engine: '{engine_name}'. " f"Available engines: {available}")
 
         engine_class, default_kwargs = cls._registry[engine_name]
 
@@ -69,14 +53,10 @@ class TTSFactory:
         merged_kwargs = {**default_kwargs, **engine_kwargs}
 
         logger.info(f"Creating TTS engine: {engine_name}")
-        return engine_class(
-            speaker_wav=speaker_wav,
-            device=device,
-            **merged_kwargs
-        )
+        return engine_class(speaker_wav=speaker_wav, device=device, **merged_kwargs)
 
     @classmethod
-    def available_engines(cls) -> List[str]:
+    def available_engines(cls) -> list[str]:
         """Get list of registered engine names."""
         return list(cls._registry.keys())
 
@@ -86,7 +66,7 @@ class TTSFactory:
         return cls._display_names.get(engine_name, engine_name)
 
     @classmethod
-    def get_engine_info(cls) -> Dict[str, str]:
+    def get_engine_info(cls) -> dict[str, str]:
         """Get dict of engine_name -> display_name for all engines."""
         return cls._display_names.copy()
 
@@ -114,11 +94,8 @@ def _register_default_engines():
     # Register Coqui engine
     try:
         from engines.coqui_engine import CoquiEngine
-        TTSFactory.register(
-            name="coqui",
-            engine_class=CoquiEngine,
-            display_name="Coqui XTTS v2"
-        )
+
+        TTSFactory.register(name="coqui", engine_class=CoquiEngine, display_name="Coqui XTTS v2")
     except ImportError as e:
         logger.warning(f"Coqui engine not available: {e}")
 
@@ -131,7 +108,7 @@ def _register_default_engines():
             name="chatterbox-turbo",
             engine_class=ChatterboxEngine,
             display_name="Chatterbox Turbo (350M)",
-            variant="turbo"
+            variant="turbo",
         )
 
         # Chatterbox Standard (higher quality)
@@ -139,7 +116,7 @@ def _register_default_engines():
             name="chatterbox-standard",
             engine_class=ChatterboxEngine,
             display_name="Chatterbox Standard (500M)",
-            variant="standard"
+            variant="standard",
         )
     except ImportError as e:
         logger.warning(f"Chatterbox engines not available: {e}")

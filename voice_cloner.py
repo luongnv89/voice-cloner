@@ -1,12 +1,12 @@
+import logging
 import os
-from typing import Optional, Union
+import warnings
+from datetime import datetime
+
 import sounddevice as sd
 import soundfile as sf
-from datetime import datetime
-import logging
-from rich.logging import RichHandler
 from rich.console import Console
-import warnings
+from rich.logging import RichHandler
 from transformers import logging as transformers_logging
 
 from tts_engine_base import TTSEngineBase
@@ -20,11 +20,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 transformers_logging.set_verbosity_error()
 
 # Set up logging with RichHandler
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-    handlers=[RichHandler(rich_tracebacks=True)]
-)
+logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[RichHandler(rich_tracebacks=True)])
 logger = logging.getLogger("voice_cloner")
 console = Console()
 
@@ -40,11 +36,7 @@ class VoiceCloner:
     """
 
     def __init__(
-        self,
-        speaker_wav: str,
-        engine: Optional[Union[str, TTSEngineBase]] = None,
-        device: Optional[str] = None,
-        **engine_kwargs
+        self, speaker_wav: str, engine: str | TTSEngineBase | None = None, device: str | None = None, **engine_kwargs
     ):
         """
         Initialize the VoiceCloner.
@@ -68,12 +60,7 @@ class VoiceCloner:
             engine = "coqui"
 
         if isinstance(engine, str):
-            self.engine = TTSFactory.create(
-                engine_name=engine,
-                speaker_wav=speaker_wav,
-                device=device,
-                **engine_kwargs
-            )
+            self.engine = TTSFactory.create(engine_name=engine, speaker_wav=speaker_wav, device=device, **engine_kwargs)
             self.engine_name = engine
         else:
             self.engine = engine
@@ -85,8 +72,8 @@ class VoiceCloner:
     def from_coqui(
         cls,
         speaker_wav: str,
-        device: Optional[str] = None,
-        model_name: str = "tts_models/multilingual/multi-dataset/xtts_v2"
+        device: str | None = None,
+        model_name: str = "tts_models/multilingual/multi-dataset/xtts_v2",
     ) -> "VoiceCloner":
         """
         Create a VoiceCloner using Coqui TTS (backward compatible factory method).
@@ -99,20 +86,10 @@ class VoiceCloner:
         Returns:
             VoiceCloner instance configured with Coqui engine.
         """
-        return cls(
-            speaker_wav=speaker_wav,
-            engine="coqui",
-            device=device,
-            model_name=model_name
-        )
+        return cls(speaker_wav=speaker_wav, engine="coqui", device=device, model_name=model_name)
 
     @classmethod
-    def from_chatterbox(
-        cls,
-        speaker_wav: str,
-        variant: str = "turbo",
-        device: Optional[str] = None
-    ) -> "VoiceCloner":
+    def from_chatterbox(cls, speaker_wav: str, variant: str = "turbo", device: str | None = None) -> "VoiceCloner":
         """
         Create a VoiceCloner using Chatterbox TTS.
 
@@ -125,11 +102,7 @@ class VoiceCloner:
             VoiceCloner instance configured with Chatterbox engine.
         """
         engine_name = f"chatterbox-{variant}"
-        return cls(
-            speaker_wav=speaker_wav,
-            engine=engine_name,
-            device=device
-        )
+        return cls(speaker_wav=speaker_wav, engine=engine_name, device=device)
 
     def say(
         self,
@@ -137,9 +110,9 @@ class VoiceCloner:
         language: str = "en",
         play_audio: bool = True,
         save_audio: bool = False,
-        output_file: Optional[str] = None,
+        output_file: str | None = None,
         speed: float = 1.0,
-        **kwargs
+        **kwargs,
     ):
         """
         Convert text to speech using the configured engine.
@@ -167,11 +140,7 @@ class VoiceCloner:
         with console.status(f"[bold cyan]Generating audio with {self.engine.name}...[/bold cyan]"):
             try:
                 # Generate audio using the engine
-                audio_data, sample_rate = self.engine.generate(
-                    text=text_to_voice,
-                    language=language,
-                    **kwargs
-                )
+                audio_data, sample_rate = self.engine.generate(text=text_to_voice, language=language, **kwargs)
 
                 # Save if requested
                 if save_audio and output_file:
