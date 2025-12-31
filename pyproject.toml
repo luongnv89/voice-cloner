@@ -1,7 +1,7 @@
 [project]
-name = "voice-cloner"
+name = "voicecast"
 version = "0.2.0"
-description = "Voice cloning application supporting multiple TTS engines"
+description = "Your words, any voice - Voice cloning and text-to-speech application"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"

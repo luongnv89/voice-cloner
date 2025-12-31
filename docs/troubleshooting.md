@@ -1,6 +1,6 @@
 # Troubleshooting
 
-This guide covers common issues and their solutions when using VoiceCloner.
+This guide covers common issues and their solutions when using VoiceCast.
 
 ## Installation Issues
 
@@ -462,7 +462,7 @@ NO_COLOR=1 python vcloner.py ...
 If your issue isn't covered here:
 
 1. **Check existing issues:**
-   https://github.com/luongnv89/voice-cloner/issues
+   https://github.com/luongnv89/voicecast/issues
 
 2. **Create new issue** with:
    - Python version: `python --version`

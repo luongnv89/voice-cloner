@@ -1,8 +1,10 @@
-# VoiceCloner
+# VoiceCast
+
+*Your words, any voice.*
 
 Voice cloning and text-to-speech with multiple TTS engines. Clone any voice from a short audio sample and generate speech in that voice.
 
-![VoiceCloner GUI](./voice-cloner-app.png)
+![VoiceCast GUI](./voicecast-app.png)
 
 ## Features
 
@@ -18,8 +20,8 @@ Voice cloning and text-to-speech with multiple TTS engines. Clone any voice from
 
 ```bash
 # Clone repository
-git clone https://github.com/luongnv89/voice-cloner.git
-cd voice-cloner
+git clone https://github.com/luongnv89/voicecast.git
+cd voicecast
 
 # Create virtual environment
 python3.10 -m venv .venv

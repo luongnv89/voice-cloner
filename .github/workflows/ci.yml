@@ -1,4 +1,4 @@
-# CI Pipeline for Voice Cloner
+# CI Pipeline for VoiceCast
 # Runs linting, security checks, and tests on push and pull requests
 
 name: CI

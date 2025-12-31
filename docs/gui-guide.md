@@ -1,6 +1,6 @@
 # GUI User Guide
 
-VoiceCloner includes a desktop GUI application for easy voice cloning without coding.
+VoiceCast includes a desktop GUI application for easy voice cloning without coding.
 
 ## Launching the Application
 
@@ -16,13 +16,13 @@ python voice_cloning_app.py
 
 ## Interface Overview
 
-![VoiceCloner GUI](../voice-cloner-app.png)
+![VoiceCast GUI](../voicecast-app.png)
 
 The interface is organized into sections:
 
 ```
 +--------------------------------------------------+
-|  VoiceCloner                                     |
+|  VoiceCast                                       |
 +--------------------------------------------------+
 |  Reference Voice                                 |
 |  [Browse...] /path/to/voice.wav                  |

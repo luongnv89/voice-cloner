@@ -1,6 +1,6 @@
 # Development Guide
 
-This guide covers setting up a development environment and contributing to VoiceCloner.
+This guide covers setting up a development environment and contributing to VoiceCast.
 
 ## Prerequisites
 
@@ -13,8 +13,8 @@ This guide covers setting up a development environment and contributing to Voice
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/luongnv89/voice-cloner.git
-cd voice-cloner
+git clone https://github.com/luongnv89/voicecast.git
+cd voicecast
 ```
 
 ### 2. Create Virtual Environment
@@ -50,7 +50,7 @@ This sets up automatic code quality checks before each commit.
 ## Project Structure
 
 ```
-voice-cloner/
+voicecast/
 ├── voice_cloner.py          # Core VoiceCloner class
 ├── tts_engine_base.py       # Abstract engine interface
 ├── tts_factory.py           # Engine factory pattern
@@ -75,7 +75,7 @@ voice-cloner/
 
 ## Code Style
 
-VoiceCloner uses:
+VoiceCast uses:
 
 - **Ruff** for linting and formatting (replaces Black, isort, Flake8)
 - **PEP 8** style guidelines

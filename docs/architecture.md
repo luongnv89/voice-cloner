@@ -1,10 +1,10 @@
 # Architecture
 
-This document describes the architecture and design patterns used in VoiceCloner.
+This document describes the architecture and design patterns used in VoiceCast.
 
 ## Overview
 
-VoiceCloner follows a layered architecture with clear separation of concerns:
+VoiceCast follows a layered architecture with clear separation of concerns:
 
 ```mermaid
 graph TB
@@ -226,7 +226,7 @@ graph LR
 ## File Organization
 
 ```
-voice-cloner/
+voicecast/
 ├── voice_cloner.py          # Core VoiceCloner class
 ├── tts_engine_base.py       # Abstract engine interface
 ├── tts_factory.py           # Engine factory
