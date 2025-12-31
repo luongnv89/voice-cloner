@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff bandit
+          pip install 'ruff>=0.8.0,<0.9.0' bandit
 
       - name: Run Ruff linter
         run: ruff check .
