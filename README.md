@@ -20,7 +20,7 @@ Voice cloning and text-to-speech with multiple TTS engines. Clone any voice from
 
 ```bash
 # Clone repository
-git clone https://github.com/luongnv89/voicecast.git
+git clone https://github.com/luongnv89/voice-cast.git
 cd voicecast
 
 # Create virtual environment

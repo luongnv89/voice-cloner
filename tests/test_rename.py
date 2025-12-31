@@ -21,7 +21,7 @@ def test_readme_has_new_name():
 
     assert "# VoiceCast" in content
     assert "Your words, any voice" in content
-    assert "voicecast.git" in content
+    assert "voice-cast.git" in content
     assert "voicecast-app.png" in content
 
 
@@ -42,13 +42,13 @@ def test_docs_updated():
     with open(os.path.join(docs_dir, "troubleshooting.md")) as f:
         content = f.read()
     assert "VoiceCast" in content
-    assert "luongnv89/voicecast/issues" in content
+    assert "luongnv89/voice-cast/issues" in content
 
     # Check development.md
     with open(os.path.join(docs_dir, "development.md")) as f:
         content = f.read()
     assert "VoiceCast" in content
-    assert "voicecast.git" in content
+    assert "voice-cast.git" in content
 
     # Check gui-guide.md
     with open(os.path.join(docs_dir, "gui-guide.md")) as f:

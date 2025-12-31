@@ -13,7 +13,7 @@ This guide covers setting up a development environment and contributing to Voice
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/luongnv89/voicecast.git
+git clone https://github.com/luongnv89/voice-cast.git
 cd voicecast
 ```
 

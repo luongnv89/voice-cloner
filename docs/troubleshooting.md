@@ -462,7 +462,7 @@ NO_COLOR=1 python vcloner.py ...
 If your issue isn't covered here:
 
 1. **Check existing issues:**
-   https://github.com/luongnv89/voicecast/issues
+   https://github.com/luongnv89/voice-cast/issues
 
 2. **Create new issue** with:
    - Python version: `python --version`
