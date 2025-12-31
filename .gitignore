@@ -30,7 +30,8 @@ MANIFEST
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
-*.spec
+# Keep voice_cloning_app.spec for app builds
+# *.spec
 
 # Installer logs
 pip-log.txt
@@ -169,5 +170,30 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-.Lnotes/
+
+# OS files
 .DS_Store
+.Lnotes/
+
+# Node.js (not used in this Python project)
+node_modules/
+package.json
+package-lock.json
+
+# Generated audio output (keep locally, don't commit)
+output-examples/*.wav
+output-examples/*.mp3
+
+# AI assistant config (optional, can be kept or ignored)
+.claude/
+.opencode/
+.specify/
+
+# Ruff cache
+.ruff_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
