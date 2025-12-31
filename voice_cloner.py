@@ -1,15 +1,16 @@
 import os
-import torch
+from typing import Optional, Union
 import sounddevice as sd
 import soundfile as sf
-from TTS.api import TTS
 from datetime import datetime
 import logging
 from rich.logging import RichHandler
 from rich.console import Console
-from rich.status import Status
 import warnings
 from transformers import logging as transformers_logging
+
+from tts_engine_base import TTSEngineBase
+from tts_factory import TTSFactory
 
 # Suppress warnings globally
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -27,83 +28,190 @@ logging.basicConfig(
 logger = logging.getLogger("voice_cloner")
 console = Console()
 
+
 class VoiceCloner:
-    def __init__(self, model_name="tts_models/multilingual/multi-dataset/xtts_v2", speaker_wav="path_to_speaker_reference.wav", device=None):
+    """
+    Voice cloning interface supporting multiple TTS engines.
+
+    Supports:
+    - Coqui XTTS v2 (default)
+    - Chatterbox Turbo (fast, with paralinguistic tags)
+    - Chatterbox Standard (higher quality)
+    """
+
+    def __init__(
+        self,
+        speaker_wav: str,
+        engine: Optional[Union[str, TTSEngineBase]] = None,
+        device: Optional[str] = None,
+        **engine_kwargs
+    ):
         """
-        Initialize the VoiceCloner class.
+        Initialize the VoiceCloner.
+
+        Args:
+            speaker_wav: Path to speaker reference audio file.
+            engine: Either an engine name (str) or a TTSEngineBase instance.
+                   Defaults to "coqui" if not specified.
+            device: Device to use ("cuda" or "cpu"). Auto-detected if None.
+            **engine_kwargs: Additional parameters passed to engine constructor.
         """
-        self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
         self.speaker_wav = speaker_wav
-        self.model_name = model_name
-
-        logger.info(f"Initializing VoiceCloner with model: {self.model_name}, device: {self.device}")
-
-        # Initialize the TTS model only once
-        self.tts = TTS(model_name=self.model_name, progress_bar=False, gpu=(self.device == "cuda"))
-        logger.info("TTS model initialized successfully.")
 
         # Ensure the speaker reference file exists
         if not os.path.exists(self.speaker_wav):
             logger.error(f"Speaker reference file not found: {self.speaker_wav}")
             raise FileNotFoundError(f"Speaker reference file not found: {self.speaker_wav}")
 
-        logger.info(f"Speaker reference file loaded: {self.speaker_wav}")
+        # Create or use provided engine
+        if engine is None:
+            engine = "coqui"
 
-    def say(self, text_to_voice, language="en", play_audio=True, save_audio=False, output_file=None, speed=1.0):
+        if isinstance(engine, str):
+            self.engine = TTSFactory.create(
+                engine_name=engine,
+                speaker_wav=speaker_wav,
+                device=device,
+                **engine_kwargs
+            )
+            self.engine_name = engine
+        else:
+            self.engine = engine
+            self.engine_name = "custom"
+
+        logger.info(f"VoiceCloner initialized with engine: {self.engine.name}")
+
+    @classmethod
+    def from_coqui(
+        cls,
+        speaker_wav: str,
+        device: Optional[str] = None,
+        model_name: str = "tts_models/multilingual/multi-dataset/xtts_v2"
+    ) -> "VoiceCloner":
         """
-        Convert text to speech using the cloned voice.
+        Create a VoiceCloner using Coqui TTS (backward compatible factory method).
+
+        Args:
+            speaker_wav: Path to speaker reference audio.
+            device: Device to use.
+            model_name: Coqui model name.
+
+        Returns:
+            VoiceCloner instance configured with Coqui engine.
         """
-        logger.info(f"Generating speech for: '{text_to_voice}' [{language}]")
+        return cls(
+            speaker_wav=speaker_wav,
+            engine="coqui",
+            device=device,
+            model_name=model_name
+        )
 
-        # If saving audio, determine output file name
-        if save_audio:
-            if not output_file:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                output_file = f"generated_audio_{timestamp}.wav"
+    @classmethod
+    def from_chatterbox(
+        cls,
+        speaker_wav: str,
+        variant: str = "turbo",
+        device: Optional[str] = None
+    ) -> "VoiceCloner":
+        """
+        Create a VoiceCloner using Chatterbox TTS.
 
+        Args:
+            speaker_wav: Path to speaker reference audio (~10 seconds recommended).
+            variant: "turbo" (fast, 350M) or "standard" (higher quality, 500M).
+            device: Device to use.
+
+        Returns:
+            VoiceCloner instance configured with Chatterbox engine.
+        """
+        engine_name = f"chatterbox-{variant}"
+        return cls(
+            speaker_wav=speaker_wav,
+            engine=engine_name,
+            device=device
+        )
+
+    def say(
+        self,
+        text_to_voice: str,
+        language: str = "en",
+        play_audio: bool = True,
+        save_audio: bool = False,
+        output_file: Optional[str] = None,
+        speed: float = 1.0,
+        **kwargs
+    ):
+        """
+        Convert text to speech using the configured engine.
+
+        Args:
+            text_to_voice: Text to synthesize.
+            language: Language code (e.g., "en", "fr").
+            play_audio: Whether to play the audio.
+            save_audio: Whether to save to file.
+            output_file: Output file path (auto-generated if not provided).
+            speed: Playback speed multiplier.
+            **kwargs: Engine-specific parameters (e.g., cfg_weight for Chatterbox).
+        """
+        logger.info(f"Generating speech for: '{text_to_voice[:50]}...' [{language}]")
+
+        # Determine output file
+        if save_audio and not output_file:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_file = f"generated_audio_{timestamp}.wav"
+
+        if output_file:
             output_dir = os.path.dirname(output_file) or "."
             os.makedirs(output_dir, exist_ok=True)
 
-        with console.status("[bold cyan]Generating audio...[/bold cyan]") as status:
+        with console.status(f"[bold cyan]Generating audio with {self.engine.name}...[/bold cyan]"):
             try:
-                if save_audio:
-                    self.tts.tts_to_file(
-                        text=text_to_voice,
-                        speaker_wav=self.speaker_wav,
-                        file_path=output_file,
-                        language=language,
-                        gpt_cond_len=128,
-                        temperature=0.7,
-                    )
-                    logger.info(f"Audio saved to {output_file}")
-                    audio_data, samplerate = sf.read(output_file)
-                else:
-                    temp_file = "temp_audio.wav"
-                    self.tts.tts_to_file(
-                        text=text_to_voice,
-                        speaker_wav=self.speaker_wav,
-                        file_path=temp_file,
-                        language=language,
-                        gpt_cond_len=128,
-                        temperature=0.7,
-                    )
-                    audio_data, samplerate = sf.read(temp_file)
-                    os.remove(temp_file)
+                # Generate audio using the engine
+                audio_data, sample_rate = self.engine.generate(
+                    text=text_to_voice,
+                    language=language,
+                    **kwargs
+                )
 
+                # Save if requested
+                if save_audio and output_file:
+                    sf.write(output_file, audio_data, sample_rate)
+                    logger.info(f"Audio saved to {output_file}")
+
+                # Play if requested
                 if play_audio:
-                    self._play_audio(audio_data, samplerate, speed)
+                    self._play_audio(audio_data, sample_rate, speed)
 
             except Exception as e:
                 logger.error(f"Error during TTS generation: {e}")
+                raise
 
-    def _play_audio(self, audio_data, samplerate, speed=1.0):
+    def _play_audio(self, audio_data, sample_rate: int, speed: float = 1.0):
         """
         Play the generated audio.
+
+        Args:
+            audio_data: Audio samples as numpy array.
+            sample_rate: Audio sample rate.
+            speed: Playback speed multiplier.
         """
         try:
-            adjusted_samplerate = int(samplerate * speed)
-            sd.play(audio_data, adjusted_samplerate)
+            adjusted_sample_rate = int(sample_rate * speed)
+            sd.play(audio_data, adjusted_sample_rate)
             sd.wait()
             logger.info("Audio playback finished.")
         except Exception as e:
             logger.error(f"Error playing audio: {e}")
+
+    def get_engine_parameters(self):
+        """Get supported parameters for the current engine."""
+        return self.engine.get_supported_parameters()
+
+    def get_supported_languages(self):
+        """Get supported languages for the current engine."""
+        return self.engine.supports_languages
+
+    @staticmethod
+    def available_engines():
+        """Get list of available TTS engines."""
+        return TTSFactory.get_engine_info()
